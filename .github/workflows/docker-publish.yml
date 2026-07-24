@@ -1,9 +1,8 @@
-name: Publish Docker image
+name: CI/CD
 
 on:
   push:
     branches: [main]
-    tags: ['v*.*.*']
 
 # Evita builds concorrentes sobre o mesmo ref.
 concurrency:
@@ -15,7 +14,30 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # Mantém um "Release PR" acumulando os Conventional Commits e calculando a
+  # próxima versão + CHANGELOG. Ao mergear esse PR, cria a tag vX.Y.Z + Release.
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # cria tags/releases e commita o CHANGELOG/bump
+      pull-requests: write # cria/atualiza o Release PR
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+      version: ${{ steps.rp.outputs.version }}
+      major: ${{ steps.rp.outputs.major }}
+      minor: ${{ steps.rp.outputs.minor }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: rp
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Sempre publica sha-<commit> (imutável, usado pelo CD). Quando o run é o
+  # merge do Release PR (release_created=true), adiciona também as tags semver
+  # e latest — sem precisar de PAT nem de um segundo workflow.
   build-and-push:
+    needs: release-please
     runs-on: ubuntu-latest
     permissions:
       contents: write # para o CD atualizar o kustomization na main
@@ -25,7 +47,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           # Faz checkout da branch (não do SHA em detached) para permitir o
-          # commit de volta do kustomization nos pushes da main.
+          # commit de volta do kustomization.
           ref: ${{ github.ref_name }}
 
       - name: Set up QEMU
@@ -49,10 +71,10 @@ jobs:
           tags: |
             # sempre: tag imutável a partir do commit
             type=sha,prefix=sha-,format=short
-            # em git tags vX.Y.Z: semver e latest
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            # só quando o release-please cortou uma versão: semver + latest
+            type=raw,value=${{ needs.release-please.outputs.version }},enable=${{ needs.release-please.outputs.release_created }}
+            type=raw,value=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }},enable=${{ needs.release-please.outputs.release_created }}
+            type=raw,value=latest,enable=${{ needs.release-please.outputs.release_created }}
 
       - name: Build and push (multi-arch)
         uses: docker/build-push-action@v6
@@ -65,9 +87,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # CD: fixa o deployment na imagem imutável recém-publicada (apenas na main).
-      - name: Pin image in kustomization (main only)
-        if: github.ref == 'refs/heads/main'
+      # CD: fixa o deployment na imagem imutável recém-publicada.
+      - name: Pin image in kustomization
         run: |
           SHORT_SHA="$(git rev-parse --short=7 HEAD)"
           sed -i -E "s|(newTag:).*|\1 sha-${SHORT_SHA}|" k8s/kustomization.yaml
