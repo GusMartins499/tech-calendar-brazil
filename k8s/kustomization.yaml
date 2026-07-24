@@ -16,5 +16,5 @@ resources:
 # Fixa a tag imutável da imagem num único lugar. O CD atualiza `newTag` com o
 # sha-<commit> a cada release (nunca usar :latest em produção).
 images:
-  - name: ghcr.io/gusmartins499/my-calendar-tech-brazil
+  - name: ghcr.io/gusmartins499/tech-calendar-brazil
     newTag: sha-9e9c5d1

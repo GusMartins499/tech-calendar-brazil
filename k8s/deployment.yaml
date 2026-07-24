@@ -28,7 +28,7 @@ spec:
         - name: app
           # A tag é fixada pelo `images` transformer do kustomization.yaml
           # (sha-<commit> imutável, atualizado pelo CD). Nunca use :latest aqui.
-          image: ghcr.io/gusmartins499/my-calendar-tech-brazil
+          image: ghcr.io/gusmartins499/tech-calendar-brazil
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

@@ -53,8 +53,8 @@ You can follow these instructions to get a copy of the project up and running on
 1.  Clone the repository:
 
     ```bash
-    git clone https://github.com/GusMartins499/my-calendar-tech-brazil.git
-    cd my-calendar-tech-brazil
+    git clone https://github.com/GusMartins499/tech-calendar-brazil.git
+    cd tech-calendar-brazil
     ```
 
 2.  Install the dependencies:

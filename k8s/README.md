@@ -8,7 +8,7 @@ automática no boot.
 
 Um Deployment de 1 réplica com dois containers:
 
-- **app** — a imagem do projeto (`ghcr.io/gusmartins499/my-calendar-tech-brazil`),
+- **app** — a imagem do projeto (`ghcr.io/gusmartins499/tech-calendar-brazil`),
   serve na porta 3000; o entrypoint roda as migrações antes de subir.
 - **tailscale** (sidecar, userspace) — junta o pod ao tailnet como o nó
   `tech-calendar` e faz `tailscale serve` de HTTPS → `127.0.0.1:3000`.

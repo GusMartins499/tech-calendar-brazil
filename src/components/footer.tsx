@@ -32,7 +32,7 @@ export function Footer() {
               <li>
                 <a
                   className="text-muted-foreground transition-colors hover:text-foreground"
-                  href="https://github.com/GusMartins499/my-calendar-tech-brazil"
+                  href="https://github.com/GusMartins499/tech-calendar-brazil"
                   rel="noopener noreferrer"
                   target="_blank"
                 >
