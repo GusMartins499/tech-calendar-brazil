@@ -38,6 +38,9 @@ jobs:
   # e latest — sem precisar de PAT nem de um segundo workflow.
   build-and-push:
     needs: release-please
+    # Roda mesmo se o release-please falhar/for pulado: o build do sha-<commit>
+    # é o caminho de deploy contínuo e não deve depender do versionamento.
+    if: always()
     runs-on: ubuntu-latest
     permissions:
       contents: write # para o CD atualizar o kustomization na main
@@ -72,9 +75,9 @@ jobs:
             # sempre: tag imutável a partir do commit
             type=sha,prefix=sha-,format=short
             # só quando o release-please cortou uma versão: semver + latest
-            type=raw,value=${{ needs.release-please.outputs.version }},enable=${{ needs.release-please.outputs.release_created }}
-            type=raw,value=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }},enable=${{ needs.release-please.outputs.release_created }}
-            type=raw,value=latest,enable=${{ needs.release-please.outputs.release_created }}
+            type=raw,value=${{ needs.release-please.outputs.version }},enable=${{ needs.release-please.outputs.release_created == 'true' }}
+            type=raw,value=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }},enable=${{ needs.release-please.outputs.release_created == 'true' }}
+            type=raw,value=latest,enable=${{ needs.release-please.outputs.release_created == 'true' }}
 
       - name: Build and push (multi-arch)
         uses: docker/build-push-action@v6
