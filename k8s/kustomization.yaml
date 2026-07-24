@@ -17,4 +17,4 @@ resources:
 # sha-<commit> a cada release (nunca usar :latest em produção).
 images:
   - name: ghcr.io/gusmartins499/tech-calendar-brazil
-    newTag: sha-6755768
+    newTag: sha-c5eb4c0
