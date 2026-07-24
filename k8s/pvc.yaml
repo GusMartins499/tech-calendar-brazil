@@ -1,0 +1,16 @@
+# Volume persistente do banco SQLite (sessões + tokens do Google).
+# 1 réplica / RWO porque o SQLite é single-writer.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tech-calendar-db
+  namespace: tech-calendar
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  # Descomente para fixar uma StorageClass específica do seu cluster
+  # (no k3s o default costuma ser local-path).
+  # storageClassName: local-path

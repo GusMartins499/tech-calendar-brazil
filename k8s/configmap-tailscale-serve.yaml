@@ -1,0 +1,27 @@
+# Config declarativa do `tailscale serve`: publica HTTPS na porta 443 do nó
+# e faz proxy para o app em 127.0.0.1:3000 (mesmo pod).
+# ${TS_CERT_DOMAIN} é resolvido pelo sidecar para o FQDN do nó
+# (ex: tech-calendar.<seu-tailnet>.ts.net), então não é preciso hardcodar o tailnet.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tailscale-serve
+  namespace: tech-calendar
+data:
+  serve.json: |
+    {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "${TS_CERT_DOMAIN}:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:3000"
+            }
+          }
+        }
+      }
+    }

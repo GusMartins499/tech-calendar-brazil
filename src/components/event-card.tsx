@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import type { TechEvent } from '@/@types/tech-events-brazil-api-response';
 import { authClient } from '@/app/lib/better-auth-client';
-import { HTTP_STATUS_ERROR } from '@/utils/constants';
+import { HTTP_STATUS_UNAUTHORIZED } from '@/utils/constants';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -31,16 +31,18 @@ export function EventCard({ event }: EventCardProps) {
 
     setIsLoading(true);
     try {
-      const accessToken = await authClient.getAccessToken({
-        userId: session.data.user.id,
-        providerId: 'google',
-      });
+      // O access token é obtido e renovado server-side pelo better-auth;
+      // o cliente só envia o evento.
       const responseSchedule = await fetch('/api/schedule', {
         method: 'POST',
-        body: JSON.stringify({ token: accessToken.data?.accessToken, event }),
+        body: JSON.stringify({ event }),
       });
 
-      if (responseSchedule.status === HTTP_STATUS_ERROR) {
+      if (responseSchedule.status === HTTP_STATUS_UNAUTHORIZED) {
+        return toast.error('Sessão do Google expirada. Reconecte sua conta.');
+      }
+
+      if (!responseSchedule.ok) {
         return toast.error('Não foi possível adicionar o evento na agenda');
       }
 

@@ -1,7 +1,13 @@
 node_modules
 dist
 Dockerfile
+.dockerignore
 .git
+.github
 biome.json
 README.md
 .next
+local.db
+*.db
+.env*
+k8s

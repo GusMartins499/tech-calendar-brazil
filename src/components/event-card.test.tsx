@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, type Mock, test, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, type Mock, test, vi } from 'vitest';
 import type { TechEvent } from '@/@types/tech-events-brazil-api-response';
 import { authClient } from '@/app/lib/better-auth-client';
 import { EventCard } from './event-card';
@@ -7,7 +7,6 @@ import { EventCard } from './event-card';
 vi.mock('@/app/lib/better-auth-client', () => ({
   authClient: {
     useSession: vi.fn(),
-    getAccessToken: vi.fn(),
   },
 }));
 

@@ -1,5 +1,5 @@
-import { createAuthClient } from "better-auth/react"
+import { createAuthClient } from 'better-auth/react';
 
-export const authClient = createAuthClient({
-  baseURL: "http://localhost:3000",
-})
+// Sem baseURL: o client usa a mesma origem da página no browser,
+// então funciona em localhost e no domínio *.ts.net do Tailscale sem rebuild.
+export const authClient = createAuthClient();

@@ -1,2 +1,3 @@
-export const HTTP_STATUS_ERROR = 500
-export const TIMEOUT_PROMISE_MOCK = 100
+export const HTTP_STATUS_UNAUTHORIZED = 401;
+export const HTTP_STATUS_INTERNAL_ERROR = 500;
+export const TIMEOUT_PROMISE_MOCK = 100;

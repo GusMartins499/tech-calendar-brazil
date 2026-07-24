@@ -1,11 +1,13 @@
-version: '3.8'
-
 services:
   app:
     build: .
     ports:
       - "3000:3000"
+    # Banco persistido em /data (mesmo caminho do PVC no k3s).
     volumes:
-      - ./local.db:/app/local.db
+      - db-data:/data
     env_file:
       - .env
+
+volumes:
+  db-data:

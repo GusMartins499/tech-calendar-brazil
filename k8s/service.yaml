@@ -1,0 +1,14 @@
+# ClusterIP interno (o acesso externo é pelo Tailscale, no sidecar).
+# Útil para debug/healthcheck dentro do cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: tech-calendar
+  namespace: tech-calendar
+spec:
+  selector:
+    app: tech-calendar
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http

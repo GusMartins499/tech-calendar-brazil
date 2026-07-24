@@ -42,3 +42,6 @@ next-env.d.ts
 
 # database
 local.db
+
+# kubernetes secrets (nunca comitar valores reais)
+k8s/secret.yaml

@@ -15,7 +15,7 @@ Welcome to My Calendar Tech Brazil! This is a web application that allows you to
 ## ✅ To-do
 - [ ] Finish RTL tests
 - [ ] E2E tests
-- [ ] Refresh token
+- [x] Refresh token
 
 ## ✨ Features
 
@@ -35,6 +35,7 @@ This project is built with the following technologies:
 *   **Testing:** [Vitest](https://vitest.dev/) and [Testing library](https://testing-library.com/)
 *   **Linting & Formatting:** [Biome](https://biomejs.dev/)
 *   **Containerization:** [Docker](https://www.docker.com/)
+*   **Orchestration:** [k3s](https://k3s.io/) + [Tailscale](https://tailscale.com/) (see [`k8s/`](./k8s))
 
 ## 💻 Getting Started
 
@@ -96,7 +97,10 @@ To use the Google Calendar integration, you need to set up a project on the Goog
     *   Click on "Create Credentials" and select "OAuth 2.0 Client ID".
     *   Choose "Web application" as the application type.
     *   Add `http://localhost:3000` to the "Authorized JavaScript origins".
-    *   Add `http://localhost:3000/api/auth/google/callback` to the "Authorized redirect URIs".
+    *   Add `http://localhost:3000/api/auth/callback/google` to the "Authorized redirect URIs".
+    > For a Tailscale/k3s deploy, also add your node's HTTPS URL, e.g.
+    > `https://tech-calendar.<your-tailnet>.ts.net` (origin) and
+    > `https://tech-calendar.<your-tailnet>.ts.net/api/auth/callback/google` (redirect).
     *   Click "Create".
 
 4.  **Get your credentials:**
@@ -131,15 +135,44 @@ In the project directory, you can run the following scripts:
 *   `pnpm test:rtl`: Runs the tests.
 *   `pnpm test:rtl:ui`: Runs the tests with a UI.
 
+## 🔁 Token refresh
+
+Adding an event to your Google Calendar uses the account's OAuth access token,
+which expires (~1h). The server (`/api/schedule`) fetches the token via
+better-auth — which **refreshes it automatically** when expired — and, if Google
+still returns `401`, forces a refresh and retries the insert once, so the flow
+never breaks. The token never leaves the server.
+
+For this to work Google must issue a **refresh token**. The Google provider is
+configured with `accessType: "offline"` + `prompt: "select_account consent"`
+(see `src/app/lib/auth.ts`), so Google re-issues the refresh token on every
+login — no need to manually revoke access.
+
 ## 🐳 Docker
 
-This project includes a `Dockerfile` and `docker-compose.yml` for containerized development. To run the project with Docker, use the following commands:
+The `Dockerfile` (production, multi-stage) runs the database migrations on
+startup and then serves the app as a non-root user; the SQLite file lives in the
+`/data` volume. Run it locally with:
 
 ```bash
-docker-compose build
-docker-compose up -d
-docker-compose up -d --build
+docker compose up -d --build
 ```
+
+The database is created and migrated automatically on first boot (empty volume).
+
+## ☸️ Deploy (k3s + Tailscale)
+
+Manifests to run the app on **k3s**, reachable **only over your Tailscale VPN**
+(HTTPS at `tech-calendar.<your-tailnet>.ts.net`), live in [`k8s/`](./k8s). It uses
+a Tailscale **sidecar** (userspace) and a PVC for the SQLite database. See
+[`k8s/README.md`](./k8s/README.md) for the full step-by-step.
+
+Images are published to **GHCR** by [the CI workflow](./.github/workflows/docker-publish.yml):
+- every push to `main` → immutable `sha-<commit>` tag;
+- a git tag `vX.Y.Z` → `X.Y.Z`, `X.Y` and `latest`.
+
+The deployment is pinned to the immutable `sha-<commit>` tag via kustomize
+(never `latest`).
 
 ## 📄 License
 
