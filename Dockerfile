@@ -27,6 +27,14 @@ COPY . .
 ARG NEXT_PUBLIC_GOOGLE_SCOPE="https://www.googleapis.com/auth/calendar"
 ENV NEXT_PUBLIC_GOOGLE_SCOPE=$NEXT_PUBLIC_GOOGLE_SCOPE
 
+# Placeholders só para o build: o better-auth valida a config ao ser importado
+# durante o `next build` e, sem estes, emite ERROR/WARN (default secret, Google
+# sem clientId). Não são NEXT_PUBLIC_, então NÃO entram na imagem — em runtime os
+# valores reais vêm do ambiente/secrets do k8s.
+ENV BETTER_AUTH_SECRET=build-time-placeholder \
+    GOOGLE_CLIENT_ID=build-time-placeholder \
+    GOOGLE_CLIENT_SECRET=build-time-placeholder
+
 ENV NODE_OPTIONS=--max-old-space-size=4096
 ENV NEXT_TELEMETRY_DISABLED=1
 
